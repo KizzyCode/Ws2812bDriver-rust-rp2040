@@ -55,7 +55,7 @@ pub fn write_pio_core1() -> ! {
 
     // Loop forever to process the incoming state
     loop {
-        // Wait until we can shall the state
+        // Wait until we receive an update
         while !fifo.is_read_ready() {
             hint::spin_loop();
         }
