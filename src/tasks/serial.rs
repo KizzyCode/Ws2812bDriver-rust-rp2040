@@ -4,9 +4,9 @@ use crate::{command::Command, hardware::usb::UsbSerialDevice, strbuffer::StrBuff
 use rp_pico::hal::{sio::SioFifo, usb::UsbBus};
 
 /// A main task that reads update commands from the serial interface and applies them
-pub async fn task(usb_bus: UsbBus, usb_serial: StrBuffer<64>, sio_fifo: &mut SioFifo) {
+pub async fn task(usb_bus: UsbBus, serno: StrBuffer<64>, sio_fifo: &mut SioFifo) {
     // Read incoming commands and forward them to the second core
-    let mut serial = UsbSerialDevice::new(usb_bus, usb_serial);
+    let mut serial = UsbSerialDevice::new(usb_bus, serno);
     'message_loop: loop {
         // Try to read the next command line
         let mut buf = [0; Command::SERIAL_LEN];
