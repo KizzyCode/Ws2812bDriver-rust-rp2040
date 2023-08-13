@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "name": "probe-rs",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "probe-rs-debugger",
+      "runtimeArgs": ["debug"],
+      "chip": "RP2040",
+      "preLaunchTask": "${defaultBuildTask}",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "resetAfterFlashing": true,
+        "haltAfterReset": false
+      },
+      "coreConfigs": [
+        {
+          "programBinary": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/firmware",
+          "svdFile": "${workspaceFolder}/.vscode/rp2040.svd"
+        }
+      ],
+      "consoleLogLevel": "Info",
+      "presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+			}
+    },
+    {
+      "type": "cortex-debug",
+      "request": "launch",
+      "name": "openocd",
+      "servertype": "openocd",
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "${defaultBuildTask}",
+      "executable": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/firmware",
+      "gdbPath" : "arm-none-eabi-gdb",
+      "device": "RP2040",
+      "configFiles": [
+          "interface/cmsis-dap.cfg",
+          "target/rp2040.cfg"
+      ],
+      "svdFile": "${workspaceRoot}/.vscode/rp2040.svd",
+      "runToEntryPoint": "main",
+      "openOCDLaunchCommands": [
+        "adapter speed 5000"
+      ],
+      "postRestartCommands": [
+          "break main",
+          "continue"
+      ],
+      "presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+			}
+    },
+  ]
+}
