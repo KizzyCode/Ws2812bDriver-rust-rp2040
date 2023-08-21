@@ -28,6 +28,8 @@ unmaintained = "deny"
 yanked = "deny"
 # The lint level for crates with security notices
 notice = "deny"
+# Crates with known soundness issues
+unsound = "deny"
 
 # This section is considered when running `cargo deny check licenses`
 # More documentation for the licenses section can be found here:
@@ -42,6 +44,8 @@ allow = [
     "MIT",
     "BSD-2-Clause",
     "BSD-3-Clause",
+    "Apache-2.0",
+    "CC0-1.0",
     "Unicode-DFS-2016"
 ]
 # Lint level for licenses considered copyleft
@@ -62,4 +66,17 @@ default = "deny"
 # The higher the value, the more closely the license text must be to the
 # canonical license text of a valid SPDX license file.
 # [possible values: any between 0.0 and 1.0].
-confidence-threshold = 0.8
+confidence-threshold = 0.95
+
+# Blacklist for deps
+[bans]
+multiple-versions = "deny"
+deny = [
+    { name = "serde_derive", version = ">=1.0.172" }
+]
+skip = [
+    { name = "nb", version = "=0.1.3" },
+    { name = "nb", version = "=1.1.0" },
+    { name = "regex-syntax", version = "0.6.29" },
+    { name = "regex-syntax", version = "0.7.4" }
+]
