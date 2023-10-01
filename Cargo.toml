@@ -1,6 +1,6 @@
 [package]
 name = "ws2812b-driver"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 resolver = "2"
 authors = ["KizzyCode Software Labs./Keziah Biermann <development@kizzycode.de>"]
