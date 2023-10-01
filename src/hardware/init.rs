@@ -90,7 +90,7 @@ pub struct Hardware {
     pub pio0_pins: Pio0Pins,
 }
 impl Hardware {
-    /// Creates a new hardware error
+    /// Initializes the required hardware
     pub fn init() -> Option<Self> {
         // Get the required peripherals
         let Peripherals {
