@@ -1,6 +1,7 @@
 //! Implements USB-serial futures
 
 use crate::strbuffer::StrBuffer;
+use core::{cell::OnceCell, marker::PhantomData};
 use rp_pico::hal::usb::UsbBus;
 use usb_device::{
     class_prelude::UsbBusAllocator,
@@ -18,35 +19,38 @@ const PRODUCT: &str = "WS2812B LED Driver";
 /// The USB device class
 const CLASS: u8 = 2;
 
-/// The USB allocator
-/// This is ugly but sadly necessary since `SerialPort` and `UsbDeviceBuilder` both require a reference
-static mut USB_ALLOCATOR: Option<UsbBusAllocator<UsbBus>> = None;
-/// The serial number
-/// This is ugly but sadly necessary since `UsbDeviceBuilder` requires a reference
-static mut SERNO: Option<StrBuffer<64>> = None;
-
 /// A USB serial device
 pub struct UsbSerialDevice {
     /// The USB device itself
     device: UsbDevice<'static, UsbBus>,
     /// The USB device as serial device
     serial: SerialPort<'static, UsbBus>,
+    /// Deny send and sync
+    _nosendsync: PhantomData<*const OnceCell<(UsbBusAllocator<UsbBus>, StrBuffer<64>)>>,
 }
 impl UsbSerialDevice {
     /// Creates a new USB serial device on the given USB bus
     pub fn new(usb_bus: UsbBus, serno: StrBuffer<64>) -> Self {
-        // Move the allocator and serial number into a static var and reference it
-        // Note: the entire block should be sound since this function can only be called once since `usb_bus` is a
-        // singleton
+        /// The USB allocator
+        ///
+        /// # Safety
+        /// This entire block should be sound since this function is implicitly once because the function argument
+        /// `usb_bus` is a singleton, so this function cannot be called simultaneously from another core or interrupt
+        /// handler. Furthermore, the resulting object is `!Send` and `!Sync`, so there should be no inter-core race
+        /// conditions when reading the static reference.
+        static mut USB_ALLOCATOR: OnceCell<UsbBusAllocator<UsbBus>> = OnceCell::new();
         let allocator = UsbBusAllocator::new(usb_bus);
-        let allocator = unsafe {
-            USB_ALLOCATOR = Some(allocator);
-            USB_ALLOCATOR.as_ref().expect("failed to access USB allocator")
-        };
-        let serno = unsafe {
-            SERNO = Some(serno);
-            SERNO.as_ref().expect("failed to access serial number")
-        };
+        let allocator = unsafe { USB_ALLOCATOR.get_or_init(|| allocator) };
+
+        /// The serial number
+        ///
+        /// # Safety
+        /// This entire block should be sound since this function is implicitly once because the function argument
+        /// `usb_bus` is a singleton, so this function cannot be called simultaneously from another core or interrupt
+        /// handler. Furthermore, the resulting object is `!Send` and `!Sync`, so there should be no inter-core race
+        /// conditions when reading the static reference.
+        static mut SERNO: OnceCell<StrBuffer<64>> = OnceCell::new();
+        let serno = unsafe { SERNO.get_or_init(|| serno) };
 
         // Initialize the USB device
         let vid_pid = UsbVidPid(VID.0, VID.1);
@@ -58,7 +62,7 @@ impl UsbSerialDevice {
             .device_class(CLASS)
             .build();
 
-        Self { device, serial }
+        Self { device, serial, _nosendsync: PhantomData }
     }
 
     /// Polls the USB devices
@@ -69,32 +73,6 @@ impl UsbSerialDevice {
         // Note: We don't propagate the result of `device.poll` since it is not reliable and may return false even if some
         // progress can be made`
         self.device.poll(&mut [&mut self.serial]);
-    }
-
-    /// Reads some data from the USB bus
-    pub fn read(&mut self, buf: &mut [u8]) -> usize {
-        match self.serial.read(buf) {
-            Ok(len) => len,
-            Err(WouldBlock) => 0,
-            Err(e) => panic!("failed to read from USB device ({e:?})"),
-        }
-    }
-    /// Reads one byte from the USB bus
-    pub fn read_one(&mut self) -> Option<u8> {
-        let mut buf = [0];
-        match self.read(&mut buf) {
-            1 => Some(buf[0]),
-            _ => None,
-        }
-    }
-
-    /// Writes some data to the USB bus
-    pub fn write(&mut self, data: &[u8]) -> usize {
-        match self.serial.write(data) {
-            Ok(len) => len,
-            Err(WouldBlock) => 0,
-            Err(e) => panic!("failed to write to USB device ({e:?})"),
-        }
     }
 
     /// Performs an opportunistic USB device reset
@@ -114,13 +92,11 @@ impl UsbSerialDevice {
             self.poll();
 
             // Read the next byte if available, otherwise try again
-            let Some(next) = self.read_one() else {
-                continue 'read_loop;
-            };
-
-            // Append byte
-            buf[0] = next;
-            buf.rotate_left(1);
+            match self.serial.read(&mut buf[..1]) {
+                Ok(_) => buf.rotate_left(1),
+                Err(WouldBlock) => continue 'read_loop,
+                Err(e) => panic!("failed to read from USB device ({e:?})"),
+            }
         }
     }
 
@@ -134,7 +110,11 @@ impl UsbSerialDevice {
             self.poll();
 
             // Write the next data
-            buf_pos += self.write(&buf[buf_pos..]);
+            buf_pos += match self.serial.write(&buf[buf_pos..]) {
+                Ok(len) => len,
+                Err(WouldBlock) => 0,
+                Err(e) => panic!("failed to write to USB device ({e:?})"),
+            };
         }
     }
 }
