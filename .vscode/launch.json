@@ -55,5 +55,27 @@
 				"revealProblems": "onProblem",
 			}
     },
+    {
+      "type": "cortex-debug",
+      "request": "launch",
+      "name": "remote-openocd",
+      "servertype": "external",
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "${defaultBuildTask}",
+      "executable": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/firmware",
+      "gdbPath": "arm-none-eabi-gdb",
+      "device": "RP2040",
+      "gdbTarget": "debugsrv.keziah.de:3333",
+      "svdFile": "${workspaceRoot}/.vscode/rp2040.svd",
+      "runToEntryPoint": "main",
+      "postRestartCommands": [
+        "break main",
+        "continue"
+      ],
+      "presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+			}
+    },
   ]
 }
