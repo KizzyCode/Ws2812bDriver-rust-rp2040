@@ -1,7 +1,11 @@
 //! A main task that reads update commands from the serial interface and applies them
 
-use crate::{command::Command, hardware::usb::UsbSerialDevice, strbuffer::StrBuffer};
-use rp_pico::hal::{sio::SioFifo, usb::UsbBus};
+use crate::{
+    board::hal::{sio::SioFifo, usb::UsbBus},
+    command::Command,
+    hardware::usb::UsbSerialDevice,
+    strbuffer::StrBuffer,
+};
 
 /// A main task that reads update commands from the serial interface and applies them
 pub async fn task(usb_bus: UsbBus, serno: StrBuffer<64>, sio_fifo: &mut SioFifo) {
@@ -17,7 +21,7 @@ pub async fn task(usb_bus: UsbBus, serno: StrBuffer<64>, sio_fifo: &mut SioFifo)
         if buf == *b"RESET_TO_BOOTSEL\n" {
             // Disconnect USB and reset the pico
             serial.try_reset();
-            rp_pico::hal::rom_data::reset_to_usb_boot(0, 0);
+            crate::board::hal::rom_data::reset_to_usb_boot(0, 0);
         }
 
         // Parse the update or drop the message if the update is invalid

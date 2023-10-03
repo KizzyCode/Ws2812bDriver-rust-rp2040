@@ -2,4 +2,5 @@
 
 pub mod flash;
 pub mod init;
+pub mod pins;
 pub mod usb;

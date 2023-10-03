@@ -1,15 +1,17 @@
 //! The PIO assembly for WS2812B
 
-use crate::hardware::init::{Pio0, Pio0Pins};
-use pio::{Program, RP2040_MAX_PROGRAM_SIZE};
-use rp_pico::{
-    hal::{
-        clocks::SystemClock,
-        pio::{PIOBuilder, PinDir, ShiftDirection, Tx, SM0, SM1, SM2, SM3},
-        Clock,
+use crate::{
+    board::{
+        hal::{
+            clocks::SystemClock,
+            pio::{PIOBuilder, PinDir, ShiftDirection, Tx, SM0, SM1, SM2, SM3},
+            Clock,
+        },
+        pac::PIO0,
     },
-    pac::PIO0,
+    hardware::{init::Pio0, pins::Pio0Pins},
 };
+use pio::{Program, RP2040_MAX_PROGRAM_SIZE};
 
 /// A PIO TX pin
 pub trait PioTx {
@@ -57,7 +59,7 @@ pub fn setup(
     let installed = pio.install(&program).expect("failed to install program");
 
     // Setup the state machines
-    macro_rules! setup {
+    macro_rules! setup_statemachine {
         ($sm:expr => $pin:expr) => {{
             // Setup state machine
             let (mut sm, _, tx) = PIOBuilder::from_program(unsafe { installed.share() })
@@ -74,11 +76,13 @@ pub fn setup(
             tx
         }};
     }
+
+    // Create the state machine tuple
     (
-        setup!(sm0 => pio0_pins.pin_a),
-        setup!(sm1 => pio0_pins.pin_b),
-        setup!(sm2 => pio0_pins.pin_c),
-        setup!(sm3 => pio0_pins.pin_d),
+        setup_statemachine!(sm0 => pio0_pins.pin_a),
+        setup_statemachine!(sm1 => pio0_pins.pin_b),
+        setup_statemachine!(sm2 => pio0_pins.pin_c),
+        setup_statemachine!(sm3 => pio0_pins.pin_d),
     )
 }
 

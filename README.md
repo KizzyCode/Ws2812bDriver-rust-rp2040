@@ -42,8 +42,20 @@ without the need for user interaction/physical presence.
 
 
 ## GPIO pins
-The currently preselected GPIO pins are `10`, `11`, `12`, `13`. To adjust the GPIO pins, you can change them in
-`src/hardware/init`.
+To adjust the GPIO pins, you can set the following environment variables during compilation to the appropriate pin
+numbers:
+ - `WS2812B_PIO0_PIN0`: The control pin for the first LED strip (defaults to `10`)
+ - `WS2812B_PIO0_PIN1`: The control pin for the second LED strip (defaults to `11`)
+ - `WS2812B_PIO0_PIN2`: The control pin for the third LED strip (defaults to `12`)
+ - `WS2812B_PIO0_PIN3`: The control pin for the fourth LED strip (defaults to `13`)
+ - `WS2812B_GPIO_LED`: The control pin for the status LED (defaults to `25`)
 
-**IMPORTANT**: Please keep in mind that most WS2812B LED strips require 5V, whereas the Pico's GPIOs are 3V3, which may
+**IMPORTANT**: Please keep in mind that most WS2812B LED strips require 5V, whereas the RP2040's GPIOs are 3V3, which may
 not be enough or can cause weird errors.
+
+## TODO:
+ - [ ] Batch command format to improve state-change performance
+ - [ ] Maybe batch/ring IPC between core 0 and 1 instead of SIO FIFO
+ - [ ] Update only changed strips/skip strips without change
+ - [ ] Select board constant instead of LED PIN
+   - [ ] Disable unused LEDs on Seeduino XIAO RP2040

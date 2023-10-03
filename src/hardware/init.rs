@@ -1,17 +1,20 @@
 //! Initializes all required hardware modules
 
-use rp_pico::{
-    hal::{
-        clocks::{self, ClocksManager, SystemClock},
-        gpio::{bank0::*, FunctionPio0, Output, Pin, PushPull},
-        multicore::Multicore,
-        pio::{PIOExt, UninitStateMachine, PIO, SM0, SM1, SM2, SM3},
-        sio::SioFifo,
-        usb::UsbBus,
-        Sio, Timer, Watchdog,
+use crate::{
+    board::{
+        hal::{
+            clocks::{self, ClocksManager, SystemClock},
+            gpio::{DynPinId, FunctionSioOutput, Pin, PullDown},
+            multicore::Multicore,
+            pio::{PIOExt, UninitStateMachine, PIO, SM0, SM1, SM2, SM3},
+            sio::SioFifo,
+            usb::UsbBus,
+            Sio, Timer, Watchdog,
+        },
+        pac::{Peripherals, PIO0, PPB, PSM, RESETS},
+        Pins, XOSC_CRYSTAL_FREQ,
     },
-    pac::{Peripherals, PIO0, PPB, PSM, RESETS},
-    Pins, XOSC_CRYSTAL_FREQ,
+    hardware::pins::{PinSet, Pio0Pins},
 };
 
 /// The hardware peripherals to start core 1
@@ -30,7 +33,7 @@ impl Core1 {
     }
 
     /// Starts core 1
-    pub fn start(&mut self, stack: &'static mut [usize], entry: fn() -> !) {
+    pub fn start(&mut self, stack: &'static mut [usize], entry: fn() -> ()) {
         let mut multicore = Multicore::new(&mut self.psm, &mut self.ppb, &mut self.sio_fifo);
         let cores = multicore.cores();
         cores[1].spawn(stack, entry).expect("failed to start core 1");
@@ -58,18 +61,6 @@ impl Pio0 {
     }
 }
 
-/// The PIO pins
-pub struct Pio0Pins {
-    /// PIO pin A
-    pub pin_a: Pin<Gpio10, FunctionPio0>,
-    /// PIO pin B
-    pub pin_b: Pin<Gpio11, FunctionPio0>,
-    /// PIO pin C
-    pub pin_c: Pin<Gpio12, FunctionPio0>,
-    /// PIO pin D
-    pub pin_d: Pin<Gpio13, FunctionPio0>,
-}
-
 /// The underlying basic hardware
 pub struct Hardware {
     /// The watchdog peripheral
@@ -77,7 +68,7 @@ pub struct Hardware {
     /// The system clock
     pub system_clock: SystemClock,
     /// The LED pin
-    pub led: Pin<Gpio25, Output<PushPull>>,
+    pub led: Pin<DynPinId, FunctionSioOutput, PullDown>,
     /// The timer peripherals
     pub timer: Timer,
     /// The USB bus
@@ -114,34 +105,29 @@ impl Hardware {
 
         // Create watchdog and init clocks (this is important for all peripherals and should be done always)
         let mut watchdog = Watchdog::new(WATCHDOG);
-        let ClocksManager { system_clock, usb_clock, .. } =
+        let clocks =
             clocks::init_clocks_and_plls(XOSC_CRYSTAL_FREQ, XOSC, CLOCKS, PLL_SYS, PLL_USB, &mut RESETS, &mut watchdog)
                 .unwrap_or_else(|_| panic!("Failed to initialize clocks"));
 
-        // Create basic IO
-        let sio = Sio::new(SIO);
-        let gpio_bank0 = sio.gpio_bank0;
-        let pins = Pins::new(IO_BANK0, PADS_BANK0, gpio_bank0, &mut RESETS);
-        let led = pins.led.into_push_pull_output();
+        // Create timer and take system and USB clock
+        let timer = Timer::new(TIMER, &mut RESETS, &clocks);
+        let ClocksManager { system_clock, usb_clock, .. } = clocks;
 
-        // Create PIO pins
-        let pio0_pins = Pio0Pins {
-            pin_a: pins.gpio10.into_mode(),
-            pin_b: pins.gpio11.into_mode(),
-            pin_c: pins.gpio12.into_mode(),
-            pin_d: pins.gpio13.into_mode(),
-        };
+        // Create basic IO and get pin set from compile time environment
+        let sio = Sio::new(SIO);
+        let pins = Pins::new(IO_BANK0, PADS_BANK0, sio.gpio_bank0, &mut RESETS);
+        let pin_set = PinSet::from_compile_env(pins);
 
         // Init self
         Some(Self {
             watchdog,
             system_clock,
-            led,
-            timer: Timer::new(TIMER, &mut RESETS),
+            led: pin_set.led,
+            timer,
             usb_bus: UsbBus::new(USBCTRL_REGS, USBCTRL_DPRAM, usb_clock, true, &mut RESETS),
             core1: Core1::new(PPB, PSM, sio.fifo),
             pio0: Pio0::new(PIO0, &mut RESETS),
-            pio0_pins,
+            pio0_pins: pin_set.pio0,
         })
     }
 }

@@ -1,19 +1,21 @@
 //! A heartbeat task that monitors the application for errors and blinks the LEDs
 
-use crate::panic::LAST_PANIC;
+use crate::{
+    board::hal::{
+        gpio::{DynPinId, FunctionSioOutput, Pin, PullDown},
+        Timer,
+    },
+    panic::LAST_PANIC,
+};
 use core::sync::atomic::Ordering::SeqCst;
 use embedded_hal::digital::v2::{OutputPin, StatefulOutputPin};
 use fugit::MicrosDurationU32;
-use rp_pico::hal::{
-    gpio::{bank0::Gpio25, Output, Pin, PushPull},
-    Timer,
-};
 
 /// The heartbeat interval
 const INTERVAL: MicrosDurationU32 = MicrosDurationU32::millis(500);
 
 /// The heartbeat task
-pub async fn task(led: &mut Pin<Gpio25, Output<PushPull>>, timer: &Timer) {
+pub async fn task(led: &mut Pin<DynPinId, FunctionSioOutput, PullDown>, timer: &Timer) {
     // Create and await an alarm
     let mut last_blink = timer.get_counter();
     loop {

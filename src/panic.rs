@@ -1,6 +1,6 @@
 //! Implements the panic handler
 
-use crate::strbuffer::StrBuffer;
+use crate::{board::hal::Sio, strbuffer::StrBuffer};
 use core::{
     fmt::Write,
     hint::black_box,
@@ -9,7 +9,6 @@ use core::{
 };
 use cortex_m::asm;
 use cortex_m_rt::ExceptionFrame;
-use rp_pico::hal::Sio;
 
 /// The index of the core with the last panic (or `-1` in case there is no panic)
 pub static LAST_PANIC: AtomicI8 = AtomicI8::new(-1);

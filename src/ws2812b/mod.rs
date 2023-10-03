@@ -3,16 +3,16 @@
 mod pio;
 
 use crate::{
+    board::{
+        hal::{clocks::SystemClock, multicore::Stack, Sio},
+        pac::Peripherals,
+    },
     command::Command,
-    hardware::init::{Pio0, Pio0Pins},
+    hardware::{init::Pio0, pins::Pio0Pins},
     ws2812b::pio::PioTx,
 };
 use core::{cell::RefCell, hint};
 use critical_section::Mutex;
-use rp_pico::{
-    hal::{clocks::SystemClock, multicore::Stack, Sio},
-    pac::Peripherals,
-};
 
 /// The state matrix of an LED strip
 type StripState<const SIZE: usize> = [Option<(u8, u8, u8)>; SIZE];
@@ -40,7 +40,7 @@ pub fn stack_core1() -> &'static mut [usize; 1024 * 12] {
 ///
 /// # Important
 /// This runloop is blocking and designed to run on another core exclusively (i.e. core 1)
-pub fn write_pio_core1() -> ! {
+pub fn write_pio_core1() {
     // Steal the SIO FIFO and get the shared hardware
     // This should hopefully be safe since the SIO FIFO is explicitely designed for inter-core communication
     let Peripherals { SIO, .. } = unsafe { Peripherals::steal() };

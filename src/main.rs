@@ -8,6 +8,18 @@ mod strbuffer;
 mod tasks;
 mod ws2812b;
 
+// Select the appropriate board
+#[cfg(feature = "raspberrypi-pico")]
+use rp_pico as board;
+#[cfg(feature = "seeduino-xiao")]
+use seeeduino_xiao_rp2040 as board;
+#[cfg(not(any(feature = "raspberrypi-pico", feature = "seeduino-xiao")))]
+compile_error!(concat! {
+    "Please select a board using the appropriate crate feature. Supported boards are:\n",
+    " - Raspberry Pi Pico: `raspberrypi-pico`\n",
+    " - Seeed Studio XIAO RP2040: `seeduino-xiao`\n"
+});
+
 use crate::{
     hardware::{
         flash,
@@ -19,7 +31,7 @@ use crate::{
 };
 use core::fmt::Write;
 
-#[rp_pico::entry]
+#[board::entry]
 fn main() -> ! {
     // Get the flash UID before doing anything else and build the serial number
     let (jedec_id, flash_uid) = critical_section::with(|_| unsafe { flash::uid() });

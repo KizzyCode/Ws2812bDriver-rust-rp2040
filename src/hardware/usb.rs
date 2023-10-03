@@ -1,8 +1,7 @@
 //! Implements USB-serial futures
 
-use crate::strbuffer::StrBuffer;
+use crate::{board::hal::usb::UsbBus, strbuffer::StrBuffer};
 use core::{cell::OnceCell, marker::PhantomData};
-use rp_pico::hal::usb::UsbBus;
 use usb_device::{
     class_prelude::UsbBusAllocator,
     prelude::{UsbDevice, UsbDeviceBuilder, UsbVidPid},
