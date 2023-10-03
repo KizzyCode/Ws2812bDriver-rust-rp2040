@@ -41,7 +41,7 @@ command `RESET_TO_BOOTSEL\n`. This will reboot the Pico into UF2 update mode so 
 without the need for user interaction/physical presence.
 
 
-## GPIO pins
+## Configuration
 To adjust the GPIO pins, you can set the following environment variables during compilation to the appropriate pin
 numbers:
  - `WS2812B_PIO0_PIN0`: The control pin for the first LED strip (defaults to `10`)
@@ -49,6 +49,10 @@ numbers:
  - `WS2812B_PIO0_PIN2`: The control pin for the third LED strip (defaults to `12`)
  - `WS2812B_PIO0_PIN3`: The control pin for the fourth LED strip (defaults to `13`)
  - `WS2812B_GPIO_LED`: The control pin for the status LED (defaults to `25`)
+  
+To adjust the USB serial number, you can set the following environment variables during compilation:
+ - `WS2812B_UID_VENDOR`: The vendor ID (defaults to the JEDEC vendor ID of the connected flash chip)
+ - `WS2812B_UID_ID`: The vendor ID (defaults to the maybe-unique fabrication ID of the connected flash chip)
 
 **IMPORTANT**: Please keep in mind that most WS2812B LED strips require 5V, whereas the RP2040's GPIOs are 3V3, which may
 not be enough or can cause weird errors.
