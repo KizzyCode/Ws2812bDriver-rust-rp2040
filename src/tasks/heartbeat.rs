@@ -1,12 +1,8 @@
 //! A heartbeat task that monitors the application for errors and blinks the LEDs
 
-use crate::{
-    board::hal::{
-        gpio::{DynPinId, FunctionSioOutput, Pin, PullDown},
-        Timer,
-    },
-    panic::LAST_PANIC,
-};
+use crate::board::hal::gpio::{DynPinId, FunctionSioOutput, Pin, PullDown};
+use crate::board::hal::Timer;
+use crate::panic::LAST_PANIC;
 use core::sync::atomic::Ordering::SeqCst;
 use embedded_hal::digital::{OutputPin, StatefulOutputPin};
 use fugit::MicrosDurationU32;

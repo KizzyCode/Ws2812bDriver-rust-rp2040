@@ -1,11 +1,10 @@
 //! A main task that reads update commands from the serial interface and applies them
 
-use crate::{
-    board::hal::{sio::SioFifo, usb::UsbBus},
-    command::Command,
-    hardware::usb::UsbSerialDevice,
-    strbuffer::StrBuffer,
-};
+use crate::board::hal::sio::SioFifo;
+use crate::board::hal::usb::UsbBus;
+use crate::command::Command;
+use crate::hardware::usb::UsbSerialDevice;
+use crate::strbuffer::StrBuffer;
 
 /// A main task that reads update commands from the serial interface and applies them
 pub async fn task(usb_bus: UsbBus, serno: StrBuffer<64>, sio_fifo: &mut SioFifo) {

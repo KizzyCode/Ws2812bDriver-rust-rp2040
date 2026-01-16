@@ -1,15 +1,15 @@
 //! Implements USB-serial futures
 
-use crate::{board::hal::usb::UsbBus, strbuffer::StrBuffer};
-use core::{cell::OnceCell, marker::PhantomData};
+use crate::board::hal::usb::UsbBus;
+use crate::strbuffer::StrBuffer;
+use core::cell::OnceCell;
+use core::marker::PhantomData;
 use static_cell::StaticCell;
-use usb_device::{
-    class_prelude::UsbBusAllocator,
-    device::StringDescriptors,
-    prelude::{UsbDevice, UsbDeviceBuilder, UsbVidPid},
-    LangID,
-    UsbError::WouldBlock,
-};
+use usb_device::class_prelude::UsbBusAllocator;
+use usb_device::device::StringDescriptors;
+use usb_device::prelude::{UsbDevice, UsbDeviceBuilder, UsbVidPid};
+use usb_device::LangID;
+use usb_device::UsbError::WouldBlock;
 use usbd_serial::SerialPort;
 
 /// The USB vendor ID

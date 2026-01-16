@@ -1,12 +1,12 @@
 //! Implements the panic handler
 
-use crate::{board::hal::Sio, strbuffer::StrBuffer};
-use core::{
-    fmt::Write,
-    hint::black_box,
-    panic::PanicInfo,
-    sync::atomic::{AtomicI8, Ordering::SeqCst},
-};
+use crate::board::hal::Sio;
+use crate::strbuffer::StrBuffer;
+use core::fmt::Write;
+use core::hint::black_box;
+use core::panic::PanicInfo;
+use core::sync::atomic::AtomicI8;
+use core::sync::atomic::Ordering::SeqCst;
 use cortex_m::asm;
 use cortex_m_rt::ExceptionFrame;
 

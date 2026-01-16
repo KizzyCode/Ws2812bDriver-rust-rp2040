@@ -1,9 +1,7 @@
 //! A stack-allocated buffer that implements `core::fmt::Write`
 
-use core::{
-    fmt::{Display, Formatter, Write},
-    ops::Deref,
-};
+use core::fmt::{Display, Formatter, Write};
+use core::ops::Deref;
 
 /// A stack-allocated buffer that implements `core::fmt::Write`
 #[repr(C)]

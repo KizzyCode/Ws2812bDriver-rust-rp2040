@@ -2,16 +2,16 @@
 
 mod pio;
 
-use crate::{
-    board::{
-        hal::{clocks::SystemClock, multicore::Stack, Sio},
-        pac::Peripherals,
-    },
-    command::Command,
-    hardware::{init::Pio0, pins::Pio0Pins},
-    ws2812b::pio::PioTx,
-};
-use core::{cell::RefCell, hint};
+use crate::board::hal::clocks::SystemClock;
+use crate::board::hal::multicore::Stack;
+use crate::board::hal::Sio;
+use crate::board::pac::Peripherals;
+use crate::command::Command;
+use crate::hardware::init::Pio0;
+use crate::hardware::pins::Pio0Pins;
+use crate::ws2812b::pio::PioTx;
+use core::cell::RefCell;
+use core::hint;
 use critical_section::Mutex;
 
 /// The state matrix of an LED strip

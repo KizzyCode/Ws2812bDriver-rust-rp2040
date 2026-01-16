@@ -1,12 +1,8 @@
 //! Dynamic pin selection for PIO GPIO pins
 
-use crate::{
-    board::{
-        hal::gpio::{DynPinId, Function, FunctionNull, FunctionPio0, FunctionSioOutput, Pin, PullDown},
-        Pins,
-    },
-    const_int_from_compileenv,
-};
+use crate::board::hal::gpio::{DynPinId, Function, FunctionNull, FunctionPio0, FunctionSioOutput, Pin, PullDown};
+use crate::board::Pins;
+use crate::const_int_from_compileenv;
 
 /// The PIO pins
 pub struct Pio0Pins {

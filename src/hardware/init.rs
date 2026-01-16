@@ -1,21 +1,15 @@
 //! Initializes all required hardware modules
 
-use crate::{
-    board::{
-        hal::{
-            clocks::{self, ClocksManager, SystemClock},
-            gpio::{DynPinId, FunctionSioOutput, Pin, PullDown},
-            multicore::Multicore,
-            pio::{PIOExt, UninitStateMachine, PIO, SM0, SM1, SM2, SM3},
-            sio::SioFifo,
-            usb::UsbBus,
-            Sio, Timer, Watchdog,
-        },
-        pac::{Peripherals, PIO0, PPB, PSM, RESETS},
-        Pins, XOSC_CRYSTAL_FREQ,
-    },
-    hardware::pins::{PinSet, Pio0Pins},
-};
+use crate::board::hal::clocks::{self, ClocksManager, SystemClock};
+use crate::board::hal::gpio::{DynPinId, FunctionSioOutput, Pin, PullDown};
+use crate::board::hal::multicore::Multicore;
+use crate::board::hal::pio::{PIOExt, UninitStateMachine, PIO, SM0, SM1, SM2, SM3};
+use crate::board::hal::sio::SioFifo;
+use crate::board::hal::usb::UsbBus;
+use crate::board::hal::{Sio, Timer, Watchdog};
+use crate::board::pac::{Peripherals, PIO0, PPB, PSM, RESETS};
+use crate::board::{Pins, XOSC_CRYSTAL_FREQ};
+use crate::hardware::pins::{PinSet, Pio0Pins};
 
 /// The hardware peripherals to start core 1
 pub struct Core1 {

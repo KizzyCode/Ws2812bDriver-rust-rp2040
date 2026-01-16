@@ -20,15 +20,11 @@ compile_error!(concat! {
     " - Seeed Studio XIAO RP2040: `seeduino-xiao`\n"
 });
 
-use crate::{
-    hardware::{
-        flash,
-        init::{Core1, Hardware},
-    },
-    strbuffer::StrBuffer,
-    tasks::{heartbeat, serial},
-    ws2812b::{Core1Hardware, CORE1_HARDWARE},
-};
+use crate::hardware::flash;
+use crate::hardware::init::{Core1, Hardware};
+use crate::strbuffer::StrBuffer;
+use crate::tasks::{heartbeat, serial};
+use crate::ws2812b::{Core1Hardware, CORE1_HARDWARE};
 use core::fmt::Write;
 
 #[board::entry]

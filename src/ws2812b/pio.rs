@@ -1,16 +1,11 @@
 //! The PIO assembly for WS2812B
 
-use crate::{
-    board::{
-        hal::{
-            clocks::SystemClock,
-            pio::{PIOBuilder, PinDir, ShiftDirection, Tx, SM0, SM1, SM2, SM3},
-            Clock,
-        },
-        pac::PIO0,
-    },
-    hardware::{init::Pio0, pins::Pio0Pins},
-};
+use crate::board::hal::clocks::SystemClock;
+use crate::board::hal::pio::{PIOBuilder, PinDir, ShiftDirection, Tx, SM0, SM1, SM2, SM3};
+use crate::board::hal::Clock;
+use crate::board::pac::PIO0;
+use crate::hardware::init::Pio0;
+use crate::hardware::pins::Pio0Pins;
 use pio::{Program, RP2040_MAX_PROGRAM_SIZE};
 
 /// A PIO TX pin
