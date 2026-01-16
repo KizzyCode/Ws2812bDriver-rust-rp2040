@@ -1,6 +1,6 @@
 [package]
 name = "ws2812b-driver"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 resolver = "2"
 authors = ["KizzyCode Software Labs./Keziah Biermann <development@kizzycode.de>"]
@@ -27,18 +27,28 @@ seeduino-xiao = ["dep:seeeduino-xiao-rp2040"]
 [dependencies]
 cortex-m = "0.7.6"
 cortex-m-rt = "0.7.3"
-embedded-hal = "0.2.7"
-pio = "0.2.1"
-pio-proc = "0.2.2"
-fugit = "0.3.6"
 critical-section =  "1.1.1"
-usb-device = "0.2.9"
-usbd-serial = "0.1.1"
-# rp2040-flash = "0.3.1" # FIXME: currently incompatible with the current HAL version
-embedded-runtime-rp2040 = "0.2.0"
+embedded-hal = "1.0.0"
+embedded-runtime-rp2040 = "0.4.0"
+fugit = "0.3.6"
+static_cell = "2.1.1"
+usb-device = "0.3.2"
+usbd-serial = "0.2.2"
+# Depends on rp-pico
+pio = "0.2.1"
+pio-proc = "0.2.1"
 
-rp-pico = { version = "0.8.0", optional = true }
-seeeduino-xiao-rp2040 = { version = "0.5.0", optional = true }
+[dependencies.portable-atomic]
+version = "1.13.0"
+features = ["critical-section"]
+
+[dependencies.rp-pico]
+version = "0.9.0"
+optional = true
+
+[dependencies.seeeduino-xiao-rp2040]
+version = "0.6.0"
+optional = true
 
 
 [profile.dev]

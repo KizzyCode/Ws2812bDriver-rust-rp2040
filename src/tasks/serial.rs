@@ -33,7 +33,7 @@ pub async fn task(usb_bus: UsbBus, serno: StrBuffer<64>, sio_fifo: &mut SioFifo)
         // Wait until the SIO FIFO has some available space
         while !sio_fifo.is_write_ready() {
             // Always yield here to avoid a tight loop
-            embedded_runtime_rp2040::yield_now().await;
+            embedded_runtime_rp2040::spin_once().await;
         }
 
         // Send the update to the other core and reflect the message to indicate success

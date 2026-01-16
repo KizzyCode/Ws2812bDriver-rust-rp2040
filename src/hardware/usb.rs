@@ -2,9 +2,12 @@
 
 use crate::{board::hal::usb::UsbBus, strbuffer::StrBuffer};
 use core::{cell::OnceCell, marker::PhantomData};
+use static_cell::StaticCell;
 use usb_device::{
     class_prelude::UsbBusAllocator,
+    device::StringDescriptors,
     prelude::{UsbDevice, UsbDeviceBuilder, UsbVidPid},
+    LangID,
     UsbError::WouldBlock,
 };
 use usbd_serial::SerialPort;
@@ -37,9 +40,9 @@ impl UsbSerialDevice {
         /// `usb_bus` is a singleton, so this function cannot be called simultaneously from another core or interrupt
         /// handler. Furthermore, the resulting object is `!Send` and `!Sync`, so there should be no inter-core race
         /// conditions when reading the static reference.
-        static mut USB_ALLOCATOR: OnceCell<UsbBusAllocator<UsbBus>> = OnceCell::new();
+        static USB_ALLOCATOR: StaticCell<UsbBusAllocator<UsbBus>> = StaticCell::new();
         let allocator = UsbBusAllocator::new(usb_bus);
-        let allocator = unsafe { USB_ALLOCATOR.get_or_init(|| allocator) };
+        let allocator = USB_ALLOCATOR.init(allocator);
 
         /// The serial number
         ///
@@ -48,16 +51,18 @@ impl UsbSerialDevice {
         /// `usb_bus` is a singleton, so this function cannot be called simultaneously from another core or interrupt
         /// handler. Furthermore, the resulting object is `!Send` and `!Sync`, so there should be no inter-core race
         /// conditions when reading the static reference.
-        static mut SERNO: OnceCell<StrBuffer<64>> = OnceCell::new();
-        let serno = unsafe { SERNO.get_or_init(|| serno) };
+        static SERNO: StaticCell<StrBuffer<64>> = StaticCell::new();
+        let serno = SERNO.init(serno);
 
         // Initialize the USB device
         let vid_pid = UsbVidPid(VID.0, VID.1);
         let serial = SerialPort::new(allocator);
+        let descriptors =
+            StringDescriptors::new(LangID::DE).serial_number(serno).manufacturer(MANUFACTURER).product(PRODUCT);
         let device = UsbDeviceBuilder::new(allocator, vid_pid)
-            .serial_number(serno)
-            .manufacturer(MANUFACTURER)
-            .product(PRODUCT)
+            // Set identifiers
+            .strings(&[descriptors]).expect("failed to set descriptors")
+            // Mark as serial device
             .device_class(CLASS)
             .build();
 
@@ -87,7 +92,7 @@ impl UsbSerialDevice {
     {
         'read_loop: while !condition(buf) {
             // Always yield here to avoid a tight loop
-            embedded_runtime_rp2040::yield_now().await;
+            embedded_runtime_rp2040::spin_once().await;
             self.poll();
 
             // Read the next byte if available, otherwise try again
@@ -105,7 +110,7 @@ impl UsbSerialDevice {
         let mut buf_pos = 0;
         while buf_pos < buf.len() {
             // Always yield here to avoid a tight loop
-            embedded_runtime_rp2040::yield_now().await;
+            embedded_runtime_rp2040::spin_once().await;
             self.poll();
 
             // Write the next data

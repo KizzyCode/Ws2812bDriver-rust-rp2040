@@ -63,8 +63,6 @@ impl Pio0 {
 
 /// The underlying basic hardware
 pub struct Hardware {
-    /// The watchdog peripheral
-    pub watchdog: Watchdog,
     /// The system clock
     pub system_clock: SystemClock,
     /// The LED pin
@@ -120,7 +118,6 @@ impl Hardware {
 
         // Init self
         Some(Self {
-            watchdog,
             system_clock,
             led: pin_set.led,
             timer,

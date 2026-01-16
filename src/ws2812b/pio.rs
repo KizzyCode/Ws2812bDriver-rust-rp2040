@@ -62,7 +62,7 @@ pub fn setup(
     macro_rules! setup_statemachine {
         ($sm:expr => $pin:expr) => {{
             // Setup state machine
-            let (mut sm, _, tx) = PIOBuilder::from_program(unsafe { installed.share() })
+            let (mut sm, _, tx) = PIOBuilder::from_installed_program(unsafe { installed.share() })
                 .side_set_pin_base($pin.id().num)
                 .out_shift_direction(ShiftDirection::Left)
                 .autopull(true)

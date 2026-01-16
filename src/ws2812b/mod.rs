@@ -33,7 +33,8 @@ pub static CORE1_HARDWARE: Mutex<RefCell<Option<Core1Hardware>>> = Mutex::new(Re
 pub fn stack_core1() -> &'static mut [usize; 1024 * 12] {
     /// The stack for the core 1 (48 KiB)
     static mut STACK: Stack<{ 1024 * 12 }> = Stack::new();
-    unsafe { &mut STACK.mem }
+    #[allow(static_mut_refs, reason = "needs newer version of rp2040-hal")]
+    (unsafe { &mut STACK.mem })
 }
 
 /// A tight runloop that checks the inter-core FIFO for pixel changes and syncs the new state to the PIO
@@ -74,6 +75,7 @@ pub fn write_pio_core1() {
 
         // Sync to all PIOs
         'write_strip: for strip in 0..states.len() {
+            #[allow(clippy::needless_range_loop, reason = "readability")]
             for pixel in 0..states[strip].len() {
                 // Skip the strip if the pixel index is beyond end-of-strip
                 let Some((r, g, b)) = states[strip][pixel] else {

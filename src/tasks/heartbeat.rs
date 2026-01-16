@@ -8,7 +8,7 @@ use crate::{
     panic::LAST_PANIC,
 };
 use core::sync::atomic::Ordering::SeqCst;
-use embedded_hal::digital::v2::{OutputPin, StatefulOutputPin};
+use embedded_hal::digital::{OutputPin, StatefulOutputPin};
 use fugit::MicrosDurationU32;
 
 /// The heartbeat interval
@@ -20,7 +20,7 @@ pub async fn task(led: &mut Pin<DynPinId, FunctionSioOutput, PullDown>, timer: &
     let mut last_blink = timer.get_counter();
     loop {
         // Always yield here to avoid a tight loop
-        embedded_runtime_rp2040::yield_now().await;
+        embedded_runtime_rp2040::spin_once().await;
 
         // Check if we have a panic
         let last_panic = LAST_PANIC.load(SeqCst);
